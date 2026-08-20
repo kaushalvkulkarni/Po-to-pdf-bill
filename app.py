@@ -1,7 +1,7 @@
 import streamlit as st 
 import google.generativeai as genai
 from fpdf import FPDF
-from PIL import image
+from PIL import Image
 st.set_page_config(page_title="Automated pdf Billing", layout="centered")
 st.title("Purchase order to PDF bill")
 st.write("Upload Purchase Order")
