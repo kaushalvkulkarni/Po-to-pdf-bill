@@ -1,4 +1,5 @@
 streamlit
-google-genrativeai
+google-generativeai
 fpdf2
 pillow
+
