@@ -7,6 +7,6 @@ st.title("Purchase order to PDF bill")
 st.write("Upload Purchase Order")
 uploaded_file= st.file_uploader("Upload PO here (PDF or IMG)" , type=["jpg", "jpeg", "png", "pdf"])
 if uploaded_file  is not None:
-  st.success("File succefully uploaded! processing......")
+  st.success("File succefully uploaded! processing......") 
   
 
