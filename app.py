@@ -6,7 +6,7 @@ st.set_page_config(page_title="Automated pdf Billing", layout="centered")
 st.title("Purchase order to PDF bill")
 st.write("Upload Purchase Order")
 uploaded_file= st.file_uploader("upload po here (PDF or IMG)" , type=["jpg", "jpeg", "png", "pdf"])
-if uploaded_file  is not none:
+if uploaded_file  is not None:
   st.success("File succefully uploaded! processing......")
   
 
