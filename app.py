@@ -1,5 +1,4 @@
-
-           import streamlit as st
+import streamlit as st
 import google.generativeai as genai
 from fpdf import FPDF
 import json
