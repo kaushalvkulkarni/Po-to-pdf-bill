@@ -1,10 +1,9 @@
 
-
+                
 
 import streamlit as st
 import google.generativeai as genai
 from fpdf import FPDF
-from PIL import Image
 import json
 import re
 
@@ -12,7 +11,7 @@ import re
 st.set_page_config(page_title="PO to Tax Invoice Generator", layout="centered")
 
 st.title("🧾 Tax Invoice Generator")
-st.write("Upload a Purchase Order (PO) photo/image to automatically extract details and generate the formatted bill.")
+st.write("Upload a Purchase Order (PDF or Image) to automatically extract details and generate the formatted bill.")
 
 # 1. Manual Inputs for fields that don't exist on the client's PO
 st.subheader("1. Bill Details")
@@ -22,12 +21,17 @@ with col1:
 with col2:
     bill_date = st.text_input("Date (DD-MM-YYYY)", value="27-06-2026")
 
-# 2. File Uploader
+# 2. File Uploader (NOW SUPPORTS PDF)
 st.subheader("2. Upload Purchase Order")
-uploaded_file = st.file_uploader("Upload PO image (JPG/PNG)", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Upload PO document", type=["pdf", "jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    st.image(uploaded_file, caption="Uploaded Purchase Order", use_container_width=True)
+    # Display logic: Show image if it's a photo, show text if it's a PDF
+    is_pdf = uploaded_file.name.lower().endswith(".pdf")
+    if is_pdf:
+        st.success(f"📄 PDF Document Uploaded: {uploaded_file.name}")
+    else:
+        st.image(uploaded_file, caption="Uploaded Purchase Order", use_container_width=True)
     
     if st.button("🚀 Process PO & Generate PDF Bill"):
         with st.spinner("AI is reading the Purchase Order..."):
@@ -38,7 +42,7 @@ if uploaded_file is not None:
                 
                 # Instruction prompt to extract all 14 required bill fields
                 ai_prompt = """
-                Analyze this Purchase Order image and extract the information. 
+                Analyze this Purchase Order and extract the information. 
                 Return STRICTLY a JSON object without markdown or codeblocks with this exact structure:
                 {
                   "buyer_name_address": "Full Buyer Name, Delivery Address, GST No if present",
@@ -60,9 +64,17 @@ if uploaded_file is not None:
                 }
                 """
                 
-                # Call Gemini Vision API
-                image = Image.open(uploaded_file)
-                response = model.generate_content([ai_prompt, image])
+                # Assign the correct mime type for the AI
+                file_mime_type = "application/pdf" if is_pdf else "image/jpeg"
+                
+                # Pass the raw file bytes directly to Gemini
+                document_part = {
+                    "mime_type": file_mime_type,
+                    "data": uploaded_file.getvalue()
+                }
+                
+                # Call Gemini API with the document bytes
+                response = model.generate_content([ai_prompt, document_part])
                 
                 # Clean JSON response
                 raw_json = response.text.replace("```json", "").replace("```", "").strip()
