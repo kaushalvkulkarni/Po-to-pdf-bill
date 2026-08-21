@@ -1,11 +1,10 @@
 
-                
-
-import streamlit as st
+           import streamlit as st
 import google.generativeai as genai
 from fpdf import FPDF
 import json
-import re
+import os
+import tempfile
 
 # Set page configuration
 st.set_page_config(page_title="PO to Tax Invoice Generator", layout="centered")
@@ -34,7 +33,7 @@ if uploaded_file is not None:
         st.image(uploaded_file, caption="Uploaded Purchase Order", use_container_width=True)
     
     if st.button("🚀 Process PO & Generate PDF Bill"):
-        with st.spinner("AI is reading the Purchase Order..."):
+        with st.spinner("AI is reading the Purchase Order... (This takes about 10 seconds)"):
             try:
                 # Configure Gemini API using Streamlit Secrets
                 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -64,17 +63,21 @@ if uploaded_file is not None:
                 }
                 """
                 
-                # Assign the correct mime type for the AI
-                file_mime_type = "application/pdf" if is_pdf else "image/jpeg"
+                # ⚠️ THE FIX: Save the file temporarily so Google's File API can read it
+                file_extension = ".pdf" if is_pdf else ".jpg"
+                with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
+                    temp_file.write(uploaded_file.getvalue())
+                    temp_path = temp_file.name
                 
-                # Pass the raw file bytes directly to Gemini
-                document_part = {
-                    "mime_type": file_mime_type,
-                    "data": uploaded_file.getvalue()
-                }
+                # Upload the file to Google's server
+                gemini_file = genai.upload_file(path=temp_path)
                 
-                # Call Gemini API with the document bytes
-                response = model.generate_content([ai_prompt, document_part])
+                # Call Gemini API with the uploaded file
+                response = model.generate_content([ai_prompt, gemini_file])
+                
+                # Clean up: Delete the temporary files to keep everything secure and clean
+                os.remove(temp_path)
+                genai.delete_file(gemini_file.name)
                 
                 # Clean JSON response
                 raw_json = response.text.replace("```json", "").replace("```", "").strip()
@@ -192,6 +195,4 @@ if uploaded_file is not None:
                         mime="application/pdf"
                     )
             except Exception as e:
-                st.error(f"Error processing document: {e}")
-  
-
+                st.error(f"Error processing document: {e}")     
