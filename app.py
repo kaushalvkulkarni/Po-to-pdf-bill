@@ -30,9 +30,9 @@ if uploaded_file is not None:
         st.image(uploaded_file, caption="Uploaded Purchase Order", use_container_width=True)
     
     if st.button("🚀 Process PO & Generate PDF Bill"):
-        with st.spinner("Bypassing SDK to read Purchase Order natively..."):
+        with st.spinner("Executing secure direct API call..."):
             try:
-                # Get the AQ. API key from Streamlit secrets safely
+                # Get the AQ. API key
                 api_key = st.secrets["GEMINI_API_KEY"]
                 
                 # Instruction prompt
@@ -59,13 +59,16 @@ if uploaded_file is not None:
                 }
                 """
                 
-                # Encode file to base64 to send directly
+                # Encode file
                 mime_type = "application/pdf" if is_pdf else "image/jpeg"
                 file_b64 = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                 
-                # --- NATIVE API CALL (Bypassing the buggy SDK) ---
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-                headers = {'Content-Type': 'application/json'}
+                # --- THE FIX: Move key from URL to the secure Headers ---
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+                headers = {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': api_key
+                }
                 payload = {
                     "contents": [{
                         "parts": [
@@ -87,7 +90,7 @@ if uploaded_file is not None:
                 raw_json = raw_json.replace("```json", "").replace("```", "").strip()
                 data = json.loads(raw_json)
                 
-                # --- PDF GENERATION (No changes to your father's layout) ---
+                # --- PDF GENERATION ---
                 pdf = FPDF()
                 pdf.add_page()
                 pdf.set_auto_page_break(auto=True, margin=15)
