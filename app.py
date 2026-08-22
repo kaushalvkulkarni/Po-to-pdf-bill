@@ -4,6 +4,7 @@ from fpdf import FPDF
 import json
 import os
 import tempfile
+client=genai.client(api_key=st.secreat["GEMINI_API_KEY"])
 
 # Set page configuration
 st.set_page_config(page_title="PO to Tax Invoice Generator", layout="centered")
