@@ -1,8 +1,9 @@
 import streamlit as st
-import requests
-import base64
-import json
+import google.generativeai as genai
 from fpdf import FPDF
+import json
+import os
+import tempfile
 
 # Set page configuration
 st.set_page_config(page_title="PO to Tax Invoice Generator", layout="centered")
@@ -30,12 +31,12 @@ if uploaded_file is not None:
         st.image(uploaded_file, caption="Uploaded Purchase Order", use_container_width=True)
     
     if st.button("🚀 Process PO & Generate PDF Bill"):
-        with st.spinner("Executing secure direct API call..."):
+        with st.spinner("AI is reading the Purchase Order... (This takes about 10 seconds)"):
             try:
-                # Get the AQ. API key
-                api_key = st.secrets["GEMINI_API_KEY"]
+                # Configure API using standard methods
+                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                model = genai.GenerativeModel("gemini-1.5-flash")
                 
-                # Instruction prompt
                 ai_prompt = """
                 Analyze this Purchase Order and extract the information. 
                 Return STRICTLY a JSON object without markdown or codeblocks with this exact structure:
@@ -59,35 +60,20 @@ if uploaded_file is not None:
                 }
                 """
                 
-                # Encode file
-                mime_type = "application/pdf" if is_pdf else "image/jpeg"
-                file_b64 = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
+                # Use Google's File API for safe PDF parsing
+                file_extension = ".pdf" if is_pdf else ".jpg"
+                with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
+                    temp_file.write(uploaded_file.getvalue())
+                    temp_path = temp_file.name
                 
-                # --- THE FIX: Move key from URL to the secure Headers ---
-                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-                headers = {
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': api_key
-                }
-                payload = {
-                    "contents": [{
-                        "parts": [
-                            {"text": ai_prompt},
-                            {"inline_data": {
-                                "mime_type": mime_type,
-                                "data": file_b64
-                            }}
-                        ]
-                    }]
-                }
+                gemini_file = genai.upload_file(path=temp_path)
+                response = model.generate_content([ai_prompt, gemini_file])
                 
-                response = requests.post(url, headers=headers, json=payload)
-                response.raise_for_status() 
+                # Clean up temp files
+                os.remove(temp_path)
+                genai.delete_file(gemini_file.name)
                 
-                # Clean JSON response
-                response_data = response.json()
-                raw_json = response_data['candidates'][0]['content']['parts'][0]['text']
-                raw_json = raw_json.replace("```json", "").replace("```", "").strip()
+                raw_json = response.text.replace("```json", "").replace("```", "").strip()
                 data = json.loads(raw_json)
                 
                 # --- PDF GENERATION ---
