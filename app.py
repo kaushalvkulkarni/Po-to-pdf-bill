@@ -1,5 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
+api_key=st.secreats["GEMINI-API_KEY"]
+genai.configure(api_key=api_key)
 from fpdf import FPDF
 import json
 import os
