@@ -96,7 +96,7 @@ if uploaded_file is not None:
                 pdf.ln(3)
                 
                 y_start = pdf.get_y()
-                pdf.rect(10, y_start, 100, 32)
+                pdf.rect(10, y_start, 100, 32) 
                 pdf.set_xy(12, y_start + 2)
                 pdf.set_font("helvetica", "B", 8)
                 pdf.cell(96, 4, "BUYER / DELIVERY ADDRESS:", new_x="LMARGIN", new_y="NEXT")
