@@ -40,7 +40,7 @@ if uploaded_file is not None:
                 Analyze this Purchase Order and extract the information. 
                 Return STRICTLY a JSON object without markdown or codeblocks with this exact structure:
                 {
-                  "buyer_name_address": "Full Buyer Name, Delivery Address, GST No if present",
+                  "buyer_name_address": "Full Buyer Name, Delivery Address, and GST No formatted cleanly on one line like 'GSTIN: 27XXXXXXXXXXXXX' (keep address compact without unnecessary line breaks)",
                   "po_no": "PO Number or reference",
                   "po_date": "PO Date",
                   "items": [
@@ -55,7 +55,7 @@ if uploaded_file is not None:
                       "amount": "100.00"
                     }
                   ],
-                  "amount_in_words": "TOTAL AMOUNT IN WORDS"
+                  "amount_in_words": "TOTAL AMOUNT IN WORDS in UPPERCASE (e.g., 'RUPEES TWENTY THOUSAND FIVE HUNDRED ONLY'). Always generate and write the words for the grand total even if not written on the PO."
                 }
                 """
                 
