@@ -1,12 +1,9 @@
 import streamlit as st
 from google import genai
-api_key=st.secrets["GEMINI_API_KEY"]
-genai.configure(api_key=api_key)
 from fpdf import FPDF
 import json
 import os
 import tempfile
-
 
 # Set page configuration
 st.set_page_config(page_title="PO to Tax Invoice Generator", layout="centered")
@@ -36,9 +33,8 @@ if uploaded_file is not None:
     if st.button("🚀 Process PO & Generate PDF Bill"):
         with st.spinner("AI is reading the Purchase Order... (This takes about 10 seconds)"):
             try:
-                # Configure API using standard methods
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                model = genai.GenerativeModel("gemini-1.5-flash")
+                # --- THE UPGRADED MODERN API CLIENT ---
+                client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
                 
                 ai_prompt = """
                 Analyze this Purchase Order and extract the information. 
@@ -63,23 +59,28 @@ if uploaded_file is not None:
                 }
                 """
                 
-                # Use Google's File API for safe PDF parsing
+                # Save the uploaded file temporarily
                 file_extension = ".pdf" if is_pdf else ".jpg"
                 with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
                     temp_file.write(uploaded_file.getvalue())
                     temp_path = temp_file.name
                 
-                gemini_file = genai.upload_file(path=temp_path)
-                response = model.generate_content([ai_prompt, gemini_file])
+                # Upload and process using the modern SDK
+                gemini_file = client.files.upload(file=temp_path)
+                
+                response = client.models.generate_content(
+                    model='gemini-1.5-flash',
+                    contents=[gemini_file, ai_prompt]
+                )
                 
                 # Clean up temp files
                 os.remove(temp_path)
-                genai.delete_file(gemini_file.name)
+                client.files.delete(name=gemini_file.name)
                 
                 raw_json = response.text.replace("```json", "").replace("```", "").strip()
                 data = json.loads(raw_json)
                 
-                # --- PDF GENERATION ---
+                # --- PDF GENERATION (Your Father's Exact Format) ---
                 pdf = FPDF()
                 pdf.add_page()
                 pdf.set_auto_page_break(auto=True, margin=15)
