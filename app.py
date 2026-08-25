@@ -69,7 +69,7 @@ if uploaded_file is not None:
                 gemini_file = client.files.upload(file=temp_path)
                 
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-3.6-flash',
                     contents=[gemini_file, ai_prompt]
                 )
                 
