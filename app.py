@@ -90,9 +90,9 @@ if uploaded_file is not None:
                 pdf.set_font("helvetica", "B", 14)
                 pdf.cell(0, 7, "KAUSHAL ENGINEERING WORKS", align="C", new_x="LMARGIN", new_y="NEXT")
                 pdf.set_font("helvetica", "", 9)
-                pdf.cell(0, 5, "K-198, MIDC WALUJ, CHH. SAMBHAJINAGAR-431136", align="C", new_x="LMARGIN", new_y="NEXT")
+                pdf.cell(0, 5, "INDIA ", align="C", new_x="LMARGIN", new_y="NEXT")
                 pdf.set_font("helvetica", "B", 9)
-                pdf.cell(0, 5, "GSTIN: 27APFPK1406A1ZL | MOB: 9373423250", align="C", new_x="LMARGIN", new_y="NEXT")
+                pdf.cell(0, 5, "GSTIN:  | MOB: ", align="C", new_x="LMARGIN", new_y="NEXT")
                 pdf.ln(3)
                 
                 y_start = pdf.get_y()
