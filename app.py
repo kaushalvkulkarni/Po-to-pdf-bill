@@ -92,7 +92,7 @@ if uploaded_file is not None:
                 pdf.set_font("helvetica", "", 9)
                 pdf.cell(0, 5, "INDIA ", align="C", new_x="LMARGIN", new_y="NEXT")
                 pdf.set_font("helvetica", "B", 9)
-                pdf.cell(0, 5, "GSTIN:  | MOB: ", align="C", new_x="LMARGIN", new_y="NEXT")
+                pdf.cell(0, 5, "GSTIN: 27APFPK140A1ZL | MOB: 9373423250", align="C", new_x="LMARGIN", new_y="NEXT")
                 pdf.ln(3)
                 
                 y_start = pdf.get_y()
